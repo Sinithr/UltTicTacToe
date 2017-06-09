@@ -1,2 +1,2 @@
 # UltTicTacToe
-Ultimate Tic Tac Toe with Fuzzy Opponent
+Ultimate Tic Tac Toe with Fuzzy Opponent.
