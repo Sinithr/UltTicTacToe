@@ -50,7 +50,9 @@ def enemyMove(bigBoard):
         for i in range(3):
             for j in range(3):
                 if bigSymbols[i][j] == " ":
-                    if max(max(allChance(bigBoard[i][j], "o"))) > maximum:
+                    #print("all chance",allChance(bigBoard[i][j],"o"))
+                    tmpmax=[max(i) for i in allChance(bigBoard[i][j],"o")]
+                    if max(tmpmax) > maximum:
                         row = i
                         col = j
     elif 1 <= area <= 3:
@@ -67,7 +69,9 @@ def enemyMove(bigBoard):
         status = False
         return
     chance = allChance(bigBoard[row][col], "o")
-    maximum = max(max(chance))
+    print("chance:",chance)
+    #maximum = max(max(chance))
+    maximum = max([max(i) for i in chance])
     indexes = []
     for i in range(3):
         indexes.append([i for i,val in enumerate(chance[i]) if val == maximum])
