@@ -11,13 +11,17 @@ status = None
 def main():
     global bigSymbols, status
     bigBoard = makeBigBoard()
+    # main loop
     while status == None:
         showBigBoard(bigBoard)
         makeMove(bigBoard)
-        enemyMove(bigBoard)
         if find3Symbols(bigSymbols, "x"):
             status = True
             print("You won! :)")
+            break
+        enemyMove(bigBoard)
+        if status == False: # draw
+            break 
         elif find3Symbols(bigSymbols, "o"):
             status = False
             print("You lose! :(")
@@ -43,16 +47,19 @@ def find3Symbols(board, player):
 
 def enemyMove(bigBoard):
     global area, bigSymbols, status
+    #searching best board (if enemy can choose it)
     row = -1
     col = -1
-    if area == 0:
+    if area == 0: 
         maximum = 0
         for i in range(3):
             for j in range(3):
                 if bigSymbols[i][j] == " ":
-                    if max(max(allChance(bigBoard[i][j], "o"))) > maximum:
-                        row = i
-                        col = j
+                    ac = allChance(bigBoard[i][j], "o")
+                    for row in ac:
+                        if max(row) > maximum:
+                            row = i
+                            col = j
     elif 1 <= area <= 3:
         row = 0
         col = area - 1
@@ -62,12 +69,17 @@ def enemyMove(bigBoard):
     else:
         row = 2
         col = area - 7
+    # can't choose board (all blocked), draw
     if row == -1 and col == -1:
         print("Nobody won. Draw.")
         status = False
         return
+    # searching best on local board
     chance = allChance(bigBoard[row][col], "o")
-    maximum = max(max(chance))
+    maximum = 0
+    for row in chance:
+        if max(row) > maximum:
+            maximum = max(row)
     indexes = []
     for i in range(3):
         indexes.append([i for i,val in enumerate(chance[i]) if val == maximum])
@@ -76,12 +88,14 @@ def enemyMove(bigBoard):
     random.shuffle(coords)
     x = coords[0][0]
     y = coords[0][1]
+    # printing action info
     moveString = "Enemy (board, area): ("
     moveString += str(col + 3*row + 1)
     moveString += ", "
     moveString += str(y + 3*x + 1)
     moveString += ")"
     print(moveString)
+    # making move
     bigBoard[row][col][x][y] = "o"
     if find3Symbols(bigBoard[row][col], "o"):
         bigSymbols[row][col] = "o"
@@ -92,14 +106,14 @@ def enemyMove(bigBoard):
     else:
         area = y + 3*x + 1
 
-def boardFull(board):
+def boardFull(board): # checking if all spots are filled
     for row in board:
         for pos in row:
             if pos == " ":
                 return False
     return True
 
-def smallChance(board, player):
+def smallChance(board, player): # apply weights for local board
     possibList = chanceToWin(board, player)
     for i in range(3):
         for j in range(3):
@@ -109,7 +123,7 @@ def smallChance(board, player):
                 possibList[i][j] /= 100
     return possibList
 
-def bigChance(board, player):
+def bigChance(board, player): # apply weights for global board
     possibList = chanceToWin(board, player, big=True)
     for i in range(3):
         for j in range(3):
@@ -119,7 +133,7 @@ def bigChance(board, player):
                 possibList[i][j] /= 10
     return possibList
 
-def allChance(board, player):
+def allChance(board, player): # make final chance (add local and global)
     global bigSymbols
     smallPossib = smallChance(board, player)
     bigPossib = bigChance(bigSymbols, player)
@@ -131,7 +145,7 @@ def allChance(board, player):
                 bigPossib[i][j] += smallPossib[i][j]
     return bigPossib
 
-def chanceToWin(board, player, big=False):
+def chanceToWin(board, player, big=False): #chance to win on one board without weights
     if player == "x":
         enemy = "o"
     elif player == "o":
@@ -142,10 +156,12 @@ def chanceToWin(board, player, big=False):
     possibList = minMax(possibList)
     enemyPossib = Possibilities(board, enemy)
     enemyPossib = minMax(enemyPossib)
-    if big:
+    # complement of enemyPossib if it's big board
+    if big: 
         for i in range(3):
             for j in range(3):
                 enemyPossib[i][j] = 1. - enemyPossib[i][j]
+    # adding matrixes
     for i in range(3):
         for j in range(3):
             if possibList[i][j] != 0:
@@ -262,6 +278,7 @@ def Possibilities(board, player): # how many possibilities are to win on each pl
 
 def makeMove(bigBoard):
     global area, bigSymbols
+    # selecting board
     if area == 0:
         print("Select board: ")
         while True:
@@ -281,7 +298,7 @@ def makeMove(bigBoard):
                     if bigSymbols[row][col] == " ":
                         break;
         area = int(selected)
-
+    # selecting spot on board
     print("Select area on board " + str(area) + ":") 
     while True:
         selected = input()
