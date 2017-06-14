@@ -77,9 +77,9 @@ def enemyMove(bigBoard):
     # searching best on local board
     chance = allChance(bigBoard[row][col], "o")
     maximum = 0
-    for row in chance:
-        if max(row) > maximum:
-            maximum = max(row)
+    for r in chance:
+        if max(r) > maximum:
+            maximum = max(r)
     indexes = []
     for i in range(3):
         indexes.append([i for i,val in enumerate(chance[i]) if val == maximum])
@@ -160,13 +160,17 @@ def chanceToWin(board, player, big=False): #chance to win on one board without w
     if big: 
         for i in range(3):
             for j in range(3):
-                enemyPossib[i][j] = 1. - enemyPossib[i][j]
+                possibList[i][j] = 10. - enemyPossib[i][j]
     # adding matrixes
-    for i in range(3):
-        for j in range(3):
-            if possibList[i][j] != 0:
-                possibList[i][j] += enemyPossib[i][j] 
+    else:
+        for i in range(3):
+            for j in range(3):
+                if possibList[i][j] != 0:
+                    possibList[i][j] += enemyPossib[i][j]
+                    if board[i][j] != player:
+                        possibList[i][j] /= 2
     return possibList
+
 
 def minMax(p):
     new_p = [[None for _ in range(3)] for _ in range(3)]

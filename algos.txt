@@ -1,0 +1,9 @@
+if możemy wybrać board:
+    ???
+else:
+    najgorszy = wybierz_najgorszy_board_dla_przeciwnika()
+    if kilka(najgorszy):
+        miejsce = nasz_najlepszy_lokalny_z(najgorszy)
+    else:
+        miejsce = najgorszy
+    postaw_symbol(miejsce)
