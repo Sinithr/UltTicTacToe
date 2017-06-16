@@ -55,19 +55,15 @@ def enemyMove(bigBoard):
         for i in range(3):
             for j in range(3):
                 if bigSymbols[i][j] == " ":
-<<<<<<< HEAD
+
                     #print("all chance",allChance(bigBoard[i][j],"o"))
-                    tmpmax=[max(i) for i in allChance(bigBoard[i][j],"o")]
-                    if max(tmpmax) > maximum:
-                        row = i
-                        col = j
-=======
+
                     ac = allChance(bigBoard[i][j], "o")
                     for row in ac:
                         if max(row) > maximum:
                             row = i
                             col = j
->>>>>>> 71d3b21f4cb1f2d8887f103f6b1be3e45d2e0fb3
+
     elif 1 <= area <= 3:
         row = 0
         col = area - 1
@@ -84,16 +80,10 @@ def enemyMove(bigBoard):
         return
     # searching best on local board
     chance = allChance(bigBoard[row][col], "o")
-<<<<<<< HEAD
     print("chance:",chance)
     #maximum = max(max(chance))
     maximum = max([max(i) for i in chance])
-=======
-    maximum = 0
-    for r in chance:
-        if max(r) > maximum:
-            maximum = max(r)
->>>>>>> 71d3b21f4cb1f2d8887f103f6b1be3e45d2e0fb3
+
     indexes = []
     for i in range(3):
         indexes.append([i for i,val in enumerate(chance[i]) if val == maximum])
@@ -128,6 +118,7 @@ def boardFull(board): # checking if all spots are filled
     return True
 
 def smallChance(board, player): # apply weights for local board
+    print('board',board)
     possibList = chanceToWin(board, player)
     for i in range(3):
         for j in range(3):
@@ -135,6 +126,12 @@ def smallChance(board, player): # apply weights for local board
                 possibList[i][j] = 0
             else:
                 possibList[i][j] /= 100
+    #!!!
+
+    xNeighborhoodList=xNeighborhood(board) #list with 'H' in neighborhood 'x'
+    #print("lista sasiedztwa",xNeighborhoodList)
+    possibList=newSmallChance(xNeighborhoodList,possibList,'s')
+    #print('smallchance',possibList)
     return possibList
 
 def bigChance(board, player): # apply weights for global board
@@ -145,6 +142,10 @@ def bigChance(board, player): # apply weights for global board
                 possibList[i][j] = 0
             else:
                 possibList[i][j] /= 10
+    xNeighborhoodList=xNeighborhood(board) #list with 'H' in neighborhood 'x'
+    #print("lista sasiedztwa",xNeighborhoodList)
+    possibList=newSmallChance(xNeighborhoodList,possibList,'b')
+
     return possibList
 
 def allChance(board, player): # make final chance (add local and global)
@@ -168,6 +169,7 @@ def chanceToWin(board, player, big=False): #chance to win on one board without w
         return None
     possibList = Possibilities(board, player)
     possibList = minMax(possibList)
+
     enemyPossib = Possibilities(board, enemy)
     enemyPossib = minMax(enemyPossib)
     # complement of enemyPossib if it's big board
@@ -375,6 +377,31 @@ def showBigBoard(bigBoard):
                 line += bigBoard[i][j][k][0] + bigBoard[i][j][k][1] + bigBoard[i][j][k][2] + " | "
             print(line)
         print("+-----------------+")
+
+def xNeighborhood(p):
+    tab = [[None for _ in range(3)] for _ in range(3)]
+    for i in range(3):
+        for j in range(3):
+            if p[i][j] is 'x':
+                if i-1>=0 and p[i-1][j] is ' ':
+                    tab[i-1][j]='H'
+                if i+1<3 and p[i+1][j] is ' ':
+                    tab[i+1][j]='H'
+                if j-1>=0 and p[i][j-1] is ' ':
+                    tab[i][j-1]='H'
+                if j+1<3 and p[i][j+1] is ' ':
+                    tab[i][j+1]='H'
+    return tab
+
+def newSmallChance(xNeighborhoodList,possibList,p):
+    for i in range(3):
+        for j in range(3):
+            if xNeighborhoodList[i][j] is 'H':
+                if p is 's':
+                    possibList[i][j]+=0.025
+                if p is 'b':
+                    possibList[i][j]+=0.25
+    return possibList
 
 if __name__ == "__main__":
     main()
