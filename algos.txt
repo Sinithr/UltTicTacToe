@@ -1,7 +1,11 @@
 if możemy wybrać board:
-    ???
+    najlepszy = znajdź_najlepszy_board()
+    if kilka(najlepszy):
+        najlepszy = random(najlepszy) // lepsze: najlepszy = najlepszy_dla_przeciwnika_z(najlepszy)
+    wybierz_board(najlepszy)
+    postaw_symbol(najlepszy.najlepszy_spot)
 else:
-    najgorszy = wybierz_najgorszy_board_dla_przeciwnika()
+    najgorszy = znajdź_najgorszy_board_dla_przeciwnika() // poprawić pod względem szansy na lokalną wygraną przeciwnika
     if kilka(najgorszy):
         miejsce = nasz_najlepszy_lokalny_z(najgorszy)
     else:
