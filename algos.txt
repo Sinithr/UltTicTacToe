@@ -11,3 +11,28 @@ else:
     else:
         miejsce = najgorszy
     postaw_symbol(miejsce)
+
+
+znajdź_najlepszy_board():
+
+
+jeśli można wybrać board:
+allChance z opcją boardChance=True
+najlepszy dla nas
+stare wagi
+
+
+jeśli jeden board:
+allChance z opcją boardChance=False
+najgorszy dla przeciwnika
+nowe wagi
+
+X - player
+O - opponent
+1) global X best
+2) max local O worst
+3) local X best
+
+can't choose board: 2+3
+can choose board: 1+2+3
+different adding 1 and 2

@@ -7,9 +7,10 @@ area = 0 # 0 -> you can place symbol everywhere you want
 
 bigSymbols = [[" " for _ in range(3)] for _ in range(3)]
 status = None
+bigBoard = 0
 
 def main():
-    global bigSymbols, status
+    global bigSymbols, status, bigBoard
     bigBoard = makeBigBoard()
     # main loop
     while status == None:
@@ -55,10 +56,7 @@ def enemyMove(bigBoard):
         for i in range(3):
             for j in range(3):
                 if bigSymbols[i][j] == " ":
-
-                    #print("all chance",allChance(bigBoard[i][j],"o"))
-
-                    ac = allChance(bigBoard[i][j], "o")
+                    ac = allChance(bigBoard[i][j], "o", True, i, j) # it can choose board
                     for row in ac:
                         if max(row) > maximum:
                             row = i
@@ -79,9 +77,8 @@ def enemyMove(bigBoard):
         status = False
         return
     # searching best on local board
-    chance = allChance(bigBoard[row][col], "o")
-    print("chance:",chance)
-    #maximum = max(max(chance))
+    chance = allChance(bigBoard[row][col], "o", False) # it can't choose board 
+    #print("chance:",chance)
     maximum = max([max(i) for i in chance])
 
     indexes = []
@@ -118,7 +115,6 @@ def boardFull(board): # checking if all spots are filled
     return True
 
 def smallChance(board, player): # apply weights for local board
-    print('board',board)
     possibList = chanceToWin(board, player)
     for i in range(3):
         for j in range(3):
@@ -126,39 +122,97 @@ def smallChance(board, player): # apply weights for local board
                 possibList[i][j] = 0
             else:
                 possibList[i][j] /= 100
-    #!!!
 
-    xNeighborhoodList=xNeighborhood(board) #list with 'H' in neighborhood 'x'
-    #print("lista sasiedztwa",xNeighborhoodList)
-    possibList=newSmallChance(xNeighborhoodList,possibList,'s')
-    #print('smallchance',possibList)
-    return possibList
-
-def bigChance(board, player): # apply weights for global board
-    possibList = chanceToWin(board, player, big=True)
+    # searching neighborhood
+    symNeighborhoodList=symNeighborhood(board, player) #list with 'H' in neighborhood 'x'
     for i in range(3):
         for j in range(3):
-            if possibList[i][j] == 10:
-                possibList[i][j] = 0
-            else:
-                possibList[i][j] /= 10
-    xNeighborhoodList=xNeighborhood(board) #list with 'H' in neighborhood 'x'
-    #print("lista sasiedztwa",xNeighborhoodList)
-    possibList=newSmallChance(xNeighborhoodList,possibList,'b')
+            if symNeighborhoodList[i][j] is 'H':
+                possibList[i][j]+=0.025
 
     return possibList
 
-def allChance(board, player): # make final chance (add local and global)
+def bigChance(board, player, boardChance=False): # apply weights for global board
+    global bigBoard
+    # making matrix for opponent if can't choose board
+    if boardChance is False:
+        if player is 'x':
+            player = 'o'
+        else:
+            player = 'x'
+    possibList = chanceToWin(board, player, big=True)
+
+    # normal wages if can choose board
+    if boardChance is True:
+        for i in range(3):
+            for j in range(3):
+                if possibList[i][j] == 10:
+                    possibList[i][j] = 0
+                else:
+                    possibList[i][j] /= 10
+    else:
+    # different algorithm if can't choose board
+        tab = [[0,0,0], [0,0,0], [0,0,0]]
+        for i in range(3):
+            for j in range(3):
+                if possibList[i][j] is 10:
+                    possibList[i][j] = 0
+                else:
+                    possibList[i][j] /= 10
+                    maximum = 0
+                    enemyLocalPossib = smallChance(bigBoard[i][j], player)
+                    for k in range(3):
+                        for l in range(3):
+                            enemyLocalPossib[k][l] *= 10
+                            if enemyLocalPossib[k][l] > maximum:
+                                maximum = enemyLocalPossib[k][l]
+                    possibList[i][j] = 0.5*possibList[i][j] + 0.5*maximum
+                    tab[i][j] = maximum
+    #### stare
+    #    for i in range(3):
+    #        for j in range(3):
+    #            if possibList[i][j] == 10:
+    #                possibList[i][j] = 0
+    #            else:
+    #                possibList[i][j] /= 40 # ?????????? Is it good or not?
+    ### koniec
+    
+    # searching neighborhood
+    symNeighborhoodList=symNeighborhood(board, player) #list with 'H' in neighborhood 'x'
+    for i in range(3):
+        for j in range(3):
+            if symNeighborhoodList[i][j] is 'H':
+                possibList[i][j]+=0.25
+
+    # block opponent from choosing board
+    for i in range(3):
+        for j in range(3):
+            if not (bigSymbols[i][j] is " "):
+                possibList[i][j] = 1.
+
+    # reversing values in matrix if can't choose board
+    if boardChance is False:
+        print(possibList)
+        for i in range(3):
+            for j in range(3):
+                possibList[i][j] = 1. - possibList[i][j]
+        print(tab)
+    return possibList
+
+def allChance(board, player, boardChance=False, x=0, y=0): # make final chance (add local and global)
     global bigSymbols
     smallPossib = smallChance(board, player)
-    bigPossib = bigChance(bigSymbols, player)
+    bigPossib = bigChance(bigSymbols, player, boardChance)
     for i in range(3):
         for j in range(3):
             if smallPossib[i][j] == 0:
                 bigPossib[i][j] = 0
             else:
-                bigPossib[i][j] += smallPossib[i][j]
-    return bigPossib
+                if boardChance is True:
+                    smallPossib[i][j] += bigPossib[x][y]
+                else:
+                    smallPossib[i][j] = 2.*(0.5*smallPossib[i][j] + 0.5*bigPossib[i][j])
+    return smallPossib
 
 def chanceToWin(board, player, big=False): #chance to win on one board without weights
     if player == "x":
@@ -176,7 +230,7 @@ def chanceToWin(board, player, big=False): #chance to win on one board without w
     if big: 
         for i in range(3):
             for j in range(3):
-                possibList[i][j] = 10. - enemyPossib[i][j]
+                enemyPossib[i][j] = 10. - enemyPossib[i][j]
     # adding matrixes
     else:
         for i in range(3):
@@ -186,7 +240,6 @@ def chanceToWin(board, player, big=False): #chance to win on one board without w
                     if board[i][j] != player:
                         possibList[i][j] /= 2
     return possibList
-
 
 def minMax(p):
     new_p = [[None for _ in range(3)] for _ in range(3)]
@@ -378,11 +431,11 @@ def showBigBoard(bigBoard):
             print(line)
         print("+-----------------+")
 
-def xNeighborhood(p):
+def symNeighborhood(p, player):
     tab = [[None for _ in range(3)] for _ in range(3)]
     for i in range(3):
         for j in range(3):
-            if p[i][j] is 'x':
+            if p[i][j] is player:
                 if i-1>=0 and p[i-1][j] is ' ':
                     tab[i-1][j]='H'
                 if i+1<3 and p[i+1][j] is ' ':
@@ -392,16 +445,6 @@ def xNeighborhood(p):
                 if j+1<3 and p[i][j+1] is ' ':
                     tab[i][j+1]='H'
     return tab
-
-def newSmallChance(xNeighborhoodList,possibList,p):
-    for i in range(3):
-        for j in range(3):
-            if xNeighborhoodList[i][j] is 'H':
-                if p is 's':
-                    possibList[i][j]+=0.025
-                if p is 'b':
-                    possibList[i][j]+=0.25
-    return possibList
 
 if __name__ == "__main__":
     main()
