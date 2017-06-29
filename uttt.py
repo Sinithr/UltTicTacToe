@@ -124,11 +124,11 @@ def smallChance(board, player): # apply weights for local board
                 possibList[i][j] /= 100
 
     # searching neighborhood
-    symNeighborhoodList=symNeighborhood(board, player) #list with 'H' in neighborhood 'x'
+    symNeighborhoodList=symNeighborhood(board, player) #list with number of neighborhood 'x'
     for i in range(3):
         for j in range(3):
-            if symNeighborhoodList[i][j] is 'H':
-                possibList[i][j]+=0.025
+            if symNeighborhoodList[i][j]>0:
+                possibList[i][j]+=0.025*symNeighborhoodList[i][j]
 
     return possibList
 
@@ -178,11 +178,11 @@ def bigChance(board, player, boardChance=False): # apply weights for global boar
     ### koniec
     
     # searching neighborhood
-    symNeighborhoodList=symNeighborhood(board, player) #list with 'H' in neighborhood 'x'
+    symNeighborhoodList=symNeighborhood(board, player) #list with number of neighborhood 'x'
     for i in range(3):
         for j in range(3):
-            if symNeighborhoodList[i][j] is 'H':
-                possibList[i][j]+=0.25
+            if symNeighborhoodList[i][j]>0:
+                possibList[i][j]+=0.25*symNeighborhoodList[i][j]
 
     # block opponent from choosing board
     for i in range(3):
@@ -432,18 +432,18 @@ def showBigBoard(bigBoard):
         print("+-----------------+")
 
 def symNeighborhood(p, player):
-    tab = [[None for _ in range(3)] for _ in range(3)]
+    tab = [[0 for _ in range(3)] for _ in range(3)]
     for i in range(3):
         for j in range(3):
             if p[i][j] is player:
                 if i-1>=0 and p[i-1][j] is ' ':
-                    tab[i-1][j]='H'
+                    tab[i-1][j]+=1
                 if i+1<3 and p[i+1][j] is ' ':
-                    tab[i+1][j]='H'
+                    tab[i+1][j]+=1
                 if j-1>=0 and p[i][j-1] is ' ':
-                    tab[i][j-1]='H'
+                    tab[i][j-1]+=1
                 if j+1<3 and p[i][j+1] is ' ':
-                    tab[i][j+1]='H'
+                    tab[i][j+1]+=1
     return tab
 
 if __name__ == "__main__":
