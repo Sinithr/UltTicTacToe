@@ -57,8 +57,8 @@ def enemyMove(bigBoard):
             for j in range(3):
                 if bigSymbols[i][j] == " ":
                     ac = allChance(bigBoard[i][j], "o", True, i, j) # it can choose board
-                    for row in ac:
-                        if max(row) > maximum:
+                    for r in ac:
+                        if max(r) > maximum:
                             row = i
                             col = j
 
@@ -79,7 +79,7 @@ def enemyMove(bigBoard):
     # searching best on local board
     chance = allChance(bigBoard[row][col], "o", False) # it can't choose board 
     #print("chance:",chance)
-    maximum = max([max(i) for i in chance])
+    maximum =max([max(i) for i in chance])
 
     indexes = []
     for i in range(3):
@@ -140,7 +140,7 @@ def bigChance(board, player, boardChance=False): # apply weights for global boar
             player = 'o'
         else:
             player = 'x'
-    possibList = chanceToWin(board, player, big=True)
+    possibList = chanceToWin(board, player)
 
     # normal wages if can choose board
     if boardChance is True:
@@ -192,11 +192,11 @@ def bigChance(board, player, boardChance=False): # apply weights for global boar
 
     # reversing values in matrix if can't choose board
     if boardChance is False:
-        print(possibList)
+        #print(possibList)
         for i in range(3):
             for j in range(3):
                 possibList[i][j] = 1. - possibList[i][j]
-        print(tab)
+        #print(tab)
     return possibList
 
 def allChance(board, player, boardChance=False, x=0, y=0): # make final chance (add local and global)
@@ -214,7 +214,7 @@ def allChance(board, player, boardChance=False, x=0, y=0): # make final chance (
                     smallPossib[i][j] = 2.*(0.5*smallPossib[i][j] + 0.5*bigPossib[i][j])
     return smallPossib
 
-def chanceToWin(board, player, big=False): #chance to win on one board without weights
+def chanceToWin(board, player): #chance to win on one board without weights
     if player == "x":
         enemy = "o"
     elif player == "o":
@@ -227,18 +227,18 @@ def chanceToWin(board, player, big=False): #chance to win on one board without w
     enemyPossib = Possibilities(board, enemy)
     enemyPossib = minMax(enemyPossib)
     # complement of enemyPossib if it's big board
-    if big: 
-        for i in range(3):
-            for j in range(3):
-                enemyPossib[i][j] = 10. - enemyPossib[i][j]
+    #if big: 
+     #   for i in range(3):
+      #      for j in range(3):
+       #         enemyPossib[i][j] = 10. - enemyPossib[i][j]
     # adding matrixes
-    else:
-        for i in range(3):
-            for j in range(3):
-                if possibList[i][j] != 0:
-                    possibList[i][j] += enemyPossib[i][j]
-                    if board[i][j] != player:
-                        possibList[i][j] /= 2
+    #else:
+    for i in range(3):
+        for j in range(3):
+            if possibList[i][j] != 0:
+                possibList[i][j] += enemyPossib[i][j]
+                if board[i][j] != player:
+                    possibList[i][j] /= 2
     return possibList
 
 def minMax(p):
